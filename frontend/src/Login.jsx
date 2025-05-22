@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
-
 const Login = () => {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
@@ -12,7 +11,7 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    document.title = "Iraguha Inventory Management System";
+    document.title = "Iraguha IMS";
 
     window.history.pushState(null, document.title, window.location.href);
     const onPopState = () => {

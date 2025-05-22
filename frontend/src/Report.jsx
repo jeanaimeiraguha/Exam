@@ -17,7 +17,6 @@ const Report = () => {
       });
   }, []);
 
-  // Function to trigger print dialog
   const handlePrint = () => {
     window.print();
   };
@@ -56,18 +55,23 @@ const Report = () => {
               </tr>
             </thead>
             <tbody>
-              {report.map((item) => (
-                <tr key={item.SparePartID}>
-                  <td>{item.SparePartID}</td>
-                  <td>{item.Name}</td>
-                  <td>{item.Category}</td>
-                  <td>{item.TotalStockIn}</td>
-                  <td>{item.TotalStockOut}</td>
-                  <td>{item.AvailableStock}</td>
-                  <td>${parseFloat(item.UnitPrice).toFixed(2)}</td>
-                  <td>${parseFloat(item.TotalStockValue).toFixed(2)}</td>
-                </tr>
-              ))}
+              {report.map((item) => {
+                const availableStock = Math.max(0, item.AvailableStock);
+                const totalStockValue = Math.max(0, parseFloat(item.TotalStockValue));
+
+                return (
+                  <tr key={item.SparePartID} className={availableStock === 0 ? 'table-danger' : ''}>
+                    <td>{item.SparePartID}</td>
+                    <td>{item.Name}</td>
+                    <td>{item.Category}</td>
+                    <td>{item.TotalStockIn}</td>
+                    <td>{item.TotalStockOut}</td>
+                    <td>{availableStock}</td>
+                    <td>${parseFloat(item.UnitPrice).toFixed(2)}</td>
+                    <td>${totalStockValue.toFixed(2)}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
