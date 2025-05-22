@@ -69,6 +69,9 @@ A simple and efficient backend system built with **Node.js** and **MySQL** to ma
 - Node.js
 - MySQL
 
+👨‍💻 Author
+Iraguha Jean Aime
+
 ### Installation
 
 ```bash
