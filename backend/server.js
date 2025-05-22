@@ -262,6 +262,76 @@ app.post('/register', (req, res) => {
     });
 });
 
+
+
+////////////////report /////////////////////
+app.get('/api/remaining-stock', (req, res) => {
+  const query = `
+    SELECT 
+      sp.id AS SparePartID,
+      sp.Name AS SparePartName,
+      sp.Category,
+      IFNULL(SUM(si.StockInQuantity), 0) AS TotalStockIn,
+      IFNULL(SUM(so.StockOutQuantity), 0) AS TotalStockOut,
+      (IFNULL(SUM(si.StockInQuantity), 0) - IFNULL(SUM(so.StockOutQuantity), 0)) AS RemainingStock
+    FROM spare_part sp
+    LEFT JOIN stock_in si ON sp.id = si.spare_part_id
+    LEFT JOIN stock_out so ON sp.id = so.spare_part_id
+    GROUP BY sp.id, sp.Name, sp.Category
+    HAVING RemainingStock > 0;
+  `;
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error('DB error:', err);
+      return res.status(500).json({ error: 'Database query failed' });
+    }
+    // Return results as JSON (no CSV conversion here)
+    res.json(results);
+  });
+});
+
+
+
+app.get('/report/stock', (req, res) => {
+  const sql = `
+    SELECT 
+        sp.id AS SparePartID,
+        sp.Name,
+        sp.Category,
+
+        IFNULL(SUM(si.StockInQuantity), 0) AS TotalStockIn,
+        IFNULL(SUM(so.StockOutQuantity), 0) AS TotalStockOut,
+
+        (IFNULL(SUM(si.StockInQuantity), 0) - IFNULL(SUM(so.StockOutQuantity), 0)) AS AvailableStock,
+
+        sp.UnitPrice,
+        (IFNULL(SUM(si.StockInQuantity), 0) - IFNULL(SUM(so.StockOutQuantity), 0)) * sp.UnitPrice AS TotalStockValue
+
+    FROM 
+        Spare_Part sp
+    LEFT JOIN 
+        Stock_in si ON si.id = sp.id   -- Change to si.spare_part_id = sp.id if using foreign key
+    LEFT JOIN 
+        Stock_out so ON so.id = sp.id  -- Change to so.spare_part_id = sp.id if using foreign key
+
+    GROUP BY 
+        sp.id, sp.Name, sp.Category, sp.UnitPrice
+
+    ORDER BY 
+        sp.Name;
+  `;
+
+  db.query(sql, (err, results) => {
+    if (err) {
+      console.error('Error generating stock report:', err);
+      return res.status(500).json({ error: 'Failed to generate stock report' });
+    }
+
+    res.json(results);
+  });
+});
+
 /////////////////////////// SERVER /////////////////////////////
 app.listen(3000, () => {
   console.log('Server running at http://localhost:3000');
