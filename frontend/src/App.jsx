@@ -20,7 +20,7 @@ import StockOut from './StockOut';
 import Dashboard from './Dashboard';
 import Report from './Report';
 import Login from './Login'; // Make sure Login component exists
-
+import NotFound from './NotFound'
 const AppContent = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -145,6 +145,7 @@ const AppContent = () => {
           <Route path="/stockout" element={<StockOut />} />
           <Route path="/report" element={<Report />} />
           <Route path="/login" element={<Login />} />
+          <Route path="*" element={<NotFound />} />
           {/* Add more routes if needed */}
         </Routes>
       </main>

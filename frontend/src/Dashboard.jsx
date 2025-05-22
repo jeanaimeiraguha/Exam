@@ -5,12 +5,21 @@ import { useNavigate } from "react-router-dom";
 function Dashboard() {
   const navigate = useNavigate();
 
+  const [username, setUsername] = useState("");
   const [stockInCount, setStockInCount] = useState(0);
   const [stockOutCount, setStockOutCount] = useState(0);
   const [revenue, setRevenue] = useState(0);
 
   useEffect(() => {
-    // Fetch Stock In data and calculate total quantity added
+    // Check login
+    const savedUser = localStorage.getItem("username");
+    if (!savedUser) {
+      navigate("/login");
+    } else {
+      setUsername(savedUser);
+    }
+
+    // Fetch Stock In data
     const fetchStockIn = async () => {
       try {
         const res = await axios.get("http://localhost:3000/stockin");
@@ -24,7 +33,7 @@ function Dashboard() {
       }
     };
 
-    // Fetch Stock Out data and calculate total quantity removed & revenue
+    // Fetch Stock Out data
     const fetchStockOut = async () => {
       try {
         const res = await axios.get("http://localhost:3000/stockout");
@@ -49,17 +58,16 @@ function Dashboard() {
 
     fetchStockIn();
     fetchStockOut();
-  }, []);
+  }, [navigate]);
 
-  // Format revenue with commas and 2 decimals
   const formattedRevenue = revenue.toLocaleString(undefined, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
 
-  // Logout handler: clear token and redirect to /login
   const handleLogout = () => {
-    localStorage.removeItem("token"); // adjust key if different
+    localStorage.removeItem("username");
+    localStorage.removeItem("token");
     navigate("/login");
   };
 
@@ -68,6 +76,9 @@ function Dashboard() {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h1 className="text-primary">
           <i className="bi bi-speedometer2 me-2"></i> SIMS
+          {username && (
+            <small className="ms-3 text-secondary">Welcome, {username}!</small>
+          )}
         </h1>
         <button className="btn btn-outline-danger" onClick={handleLogout}>
           Logout
@@ -75,7 +86,7 @@ function Dashboard() {
       </div>
 
       <div className="row g-4">
-        {/* Card 1: Stock In */}
+        {/* Stock In */}
         <div className="col-md-4">
           <div className="card text-white bg-success h-100 shadow-sm">
             <div className="card-body">
@@ -91,7 +102,7 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* Card 2: Stock Out */}
+        {/* Stock Out */}
         <div className="col-md-4">
           <div className="card text-white bg-danger h-100 shadow-sm">
             <div className="card-body">
@@ -107,7 +118,7 @@ function Dashboard() {
           </div>
         </div>
 
-        {/* Card 3: Revenue */}
+        {/* Revenue */}
         <div className="col-md-4">
           <div className="card text-white bg-info h-100 shadow-sm">
             <div className="card-body">
@@ -124,7 +135,7 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Additional section */}
+      {/* Recent Activity */}
       <div className="mt-5 p-4 bg-light rounded shadow-sm">
         <h4>
           <i className="bi bi-bar-chart-line me-2"></i> Recent Activity
@@ -132,15 +143,21 @@ function Dashboard() {
         <ul className="list-group mt-3">
           <li className="list-group-item d-flex justify-content-between align-items-center">
             Added {stockInCount} items to Stock In
-            <span className="badge bg-success rounded-pill">+{stockInCount}</span>
+            <span className="badge bg-success rounded-pill">
+              +{stockInCount}
+            </span>
           </li>
           <li className="list-group-item d-flex justify-content-between align-items-center">
             Removed {stockOutCount} items from Stock Out
-            <span className="badge bg-danger rounded-pill">-{stockOutCount}</span>
+            <span className="badge bg-danger rounded-pill">
+              -{stockOutCount}
+            </span>
           </li>
           <li className="list-group-item d-flex justify-content-between align-items-center">
             Revenue reached ${formattedRevenue} today
-            <span className="badge bg-info rounded-pill">${formattedRevenue}</span>
+            <span className="badge bg-info rounded-pill">
+              ${formattedRevenue}
+            </span>
           </li>
         </ul>
       </div>

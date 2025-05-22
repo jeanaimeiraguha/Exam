@@ -1,20 +1,38 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import "./Login.css";
 
 const Login = () => {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
-    window.onpopstate = () => {
-      window.history.go(1);
+    document.title = "Iraguha Inventory Management System";
+
+    window.history.pushState(null, document.title, window.location.href);
+    const onPopState = () => {
+      window.history.pushState(null, document.title, window.location.href);
     };
+    const onKeyDown = (e) => {
+      if (
+        (e.altKey && (e.key === "ArrowLeft" || e.key === "ArrowRight")) ||
+        (e.metaKey && (e.key === "ArrowLeft" || e.key === "ArrowRight"))
+      ) {
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener("popstate", onPopState);
+    window.addEventListener("keydown", onKeyDown);
+
     return () => {
-      window.onpopstate = null;
+      window.removeEventListener("popstate", onPopState);
+      window.removeEventListener("keydown", onKeyDown);
     };
   }, []);
 
@@ -41,64 +59,98 @@ const Login = () => {
           setMessage("Account created successfully. Please login.");
           setIsRegister(false);
         } else {
-          // ✅ Redirect to home
+          localStorage.setItem("username", name);
+          localStorage.setItem("token", data.token || ""); // If using token
           navigate("/");
         }
       }
-    } catch (err) {
+    } catch {
       setError("Network error. Try again.");
     }
   };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "auto", padding: "2rem" }}>
-      <h2>{isRegister ? "Register" : "Login"}</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label>Username</label>
-          <input
-            type="text"
-            className="form-control"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label>Password</label>
-          <input
-            type="password"
-            className="form-control"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
+    <div className="login-container position-relative">
+      <div className="overlay" />
+      <div className="form-wrapper d-flex flex-column justify-content-center align-items-center vh-100">
+        <h1 className="system-title text-white mb-4 text-center">
+          Iraguha Inventory Management System
+        </h1>
 
-        <button type="submit" className="btn btn-primary w-100">
-          {isRegister ? "Register" : "Login"}
-        </button>
+        <form
+          className={`login-form p-4 bg-white rounded shadow animated-form ${
+            isRegister ? "slide-left" : "slide-right"
+          }`}
+          onSubmit={handleSubmit}
+        >
+          <h3 className="text-center mb-3">{isRegister ? "Register" : "Login"}</h3>
 
-        {message && <div className="alert alert-success mt-3">{message}</div>}
-        {error && <div className="alert alert-danger mt-3">{error}</div>}
-      </form>
+          <div className="form-group mb-3 floating-label-group">
+            <input
+              type="text"
+              className="form-control floating-input"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              autoFocus
+            />
+            <label className="floating-label">Username</label>
+          </div>
 
-      <div className="text-center mt-3">
-        {isRegister ? (
-          <>
-            Already have an account?{" "}
-            <button className="btn btn-link" onClick={() => setIsRegister(false)}>
-              Login
-            </button>
-          </>
-        ) : (
-          <>
-            Don't have an account?{" "}
-            <button className="btn btn-link" onClick={() => setIsRegister(true)}>
-              Register
-            </button>
-          </>
-        )}
+          <div className="form-group mb-3 floating-label-group position-relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              className="form-control floating-input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <label className="floating-label">Password</label>
+            <span
+              className="toggle-password"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{ cursor: "pointer", userSelect: "none" }}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? "🙈" : "👁️"}
+            </span>
+          </div>
+
+          <button type="submit" className="btn btn-primary w-100 animated-btn">
+            {isRegister ? "Register" : "Login"}
+          </button>
+
+          {message && <div className="alert alert-success mt-3">{message}</div>}
+          {error && <div className="alert alert-danger mt-3">{error}</div>}
+
+          <div className="text-center mt-3">
+            {isRegister ? (
+              <>
+                <small>Already have an account?</small>
+                <br />
+                <button
+                  className="btn btn-sm btn-outline-secondary mt-1"
+                  onClick={() => setIsRegister(false)}
+                  type="button"
+                >
+                  Login
+                </button>
+              </>
+            ) : (
+              <>
+                <small>Don't have an account?</small>
+                <br />
+                <button
+                  className="btn btn-sm btn-outline-secondary mt-1"
+                  onClick={() => setIsRegister(true)}
+                  type="button"
+                >
+                  Register
+                </button>
+              </>
+            )}
+          </div>
+        </form>
       </div>
     </div>
   );
